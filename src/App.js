@@ -14,6 +14,12 @@ export default function App() {
   const [costInWei, setcostInWei] = useState(0);
   const [itemIdentifier, setitemIdentifier] = useState(null);
 
+  async function listenToPaymentEvent() {
+    contract.events.SupplyChainStep().on('data', async function (evt) {
+      console.log(`evt`, evt);
+    });
+  }
+
   async function initialize() {
     try {
       // Get network provider and web3 instance.
@@ -59,6 +65,12 @@ export default function App() {
     initialize();
   }, []);
 
+  useEffect(() => {
+    if (contract) {
+      listenToPaymentEvent();
+    }
+  }, [contract]);
+
   const handleOnChange = (e, id) => {
     switch (id) {
       case 'cost':
@@ -72,9 +84,10 @@ export default function App() {
     }
   };
   const handleSubmit = async () => {
-    contract.methods
+    let result = await contract.methods
       .createItem(itemIdentifier, costInWei)
       .send({ from: saccounts[0] });
+    console.log(`result`, result);
   };
 
   return (
